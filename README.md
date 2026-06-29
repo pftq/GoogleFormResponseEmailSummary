@@ -1,4 +1,5 @@
 **GOOGLE FORM RESPONSE EMAIL SUMMARY**
+
 by pftq
 
 This is a simple script for all new responses to a Google Form to be emailed to the form owner.  
