@@ -16,12 +16,13 @@ function onFormSubmit(e) {
 
   var subject = "New Response: " + formTitle;
 
-  // Build clean email body
+  
   var htmlBody = "<h2>New response submitted to: " + formTitle + "</h2>";
   htmlBody += "<p><strong>Submitted:</strong> " + new Date() + "</p>";
   htmlBody += "<hr>";
 
-  for (var i = 0; i < headers.length; i++) {
+  // Remove the -1 if you want to include the edit url
+  for (var i = 0; i < headers.length-1; i++) {
     var header = headers[i];
     var value = values[i] || "";
     htmlBody += "<p><strong>" + header + "</strong><br>" + value + "</p>";
