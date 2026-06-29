@@ -1,48 +1,30 @@
 function onFormSubmit(e) {
-  var spreadsheet = e.source;
-  var form = FormApp.openByUrl(spreadsheet.getFormUrl());
-  
-  var formTitle = form.getTitle();
-  var responses = e.namedValues;
 
-// requires permissioning from first failed run - hardcode "youremail@domain.com" if you want to skip that
-  var recipient = Session.getEffectiveUser().getEmail(); 
+  // requires failure and granting permission initially - optionally hardcode "your_email@domain.com" to skip that
+  var recipient = Session.getEffectiveUser().getEmail();
+
+  var sheet = e.source.getActiveSheet();
+
+  sheet.sort(1, false); // false = descending (newest first)
+  
+  var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  var values = sheet.getRange(2, 1, 1, sheet.getLastColumn()).getValues()[0]; // Always read row 2
+
+  var form = FormApp.openByUrl(sheet.getFormUrl());
+  var formTitle = form.getTitle();
+
+
   var subject = "New Response: " + formTitle;
 
-  var submitterEmail = "";
-  var possibleEmailKeys = ["Email", "Email Address", "Email address", "Your Email"];
-  for (var i = 0; i < possibleEmailKeys.length; i++) {
-    if (responses[possibleEmailKeys[i]] && responses[possibleEmailKeys[i]][0]) {
-      submitterEmail = responses[possibleEmailKeys[i]][0];
-      break;
-    }
-  }
-
-  var submitterName = responses["Name"] ? responses["Name"][0] : 
-                      responses["Full Name"] ? responses["Full Name"][0] : 
-                      responses["Your Name"] ? responses["Your Name"][0] : "";
-
-  // Build HTML email
+  // Build clean email body
   var htmlBody = "<h2>New response submitted to: " + formTitle + "</h2>";
   htmlBody += "<p><strong>Submitted:</strong> " + new Date() + "</p>";
-
-  if (submitterEmail) {
-    htmlBody += "<p><strong>Submitted by:</strong> " + submitterEmail + "</p>";
-  }
-  if (submitterName) {
-    htmlBody += "<p><strong>Name:</strong> " + submitterName + "</p>";
-  }
-
   htmlBody += "<hr>";
 
-  for (var question in responses) {
-    var answer = responses[question] && responses[question][0] ? responses[question][0] : "";
-    
-    if (question.toLowerCase().includes("email") || question.toLowerCase().includes("name")) {
-      continue;
-    }
-    
-    htmlBody += "<p><strong>" + question + "</strong><br>" + answer + "</p>";
+  for (var i = 0; i < headers.length; i++) {
+    var header = headers[i];
+    var value = values[i] || "";
+    htmlBody += "<p><strong>" + header + "</strong><br>" + value + "</p>";
   }
 
   htmlBody += "<hr>";
