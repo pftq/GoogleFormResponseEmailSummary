@@ -1,0 +1,44 @@
+function onFormSubmit(e) {
+  var form = e.source;
+  var formTitle = form.getTitle();
+  var responses = e.namedValues;
+
+  var recipient = form.getOwner().getEmail();   // ← Change to your email if desired
+
+  var subject = "New Response: " + formTitle;
+
+  // Try to get the respondent's email (works when "Collect email addresses" is on)
+  var submitterEmail = responses["Email"] || responses["Email Address"] || "Not collected";
+  var submitterName = responses["Name"] || responses["Full Name"] || responses["Your Name"] || "";
+
+  // Build HTML email
+  var htmlBody = "<h2>New response to: " + formTitle + "</h2>";
+  htmlBody += "<p><strong>Submitted:</strong> " + new Date() + "</p>";
+
+  // Show submitter info at the top if available
+  if (submitterEmail && submitterEmail !== "Not collected") {
+    htmlBody += "<p><strong>Submitted by:</strong> " + submitterEmail + "</p>";
+  }
+  if (submitterName) {
+    htmlBody += "<p><strong>Name:</strong> " + submitterName + "</p>";
+  }
+
+  htmlBody += "<hr>";
+
+  // Add all other questions and answers
+  for (var question in responses) {
+    // Skip the email/name fields since we already showed them above
+    if (question.toLowerCase().includes("email") || question.toLowerCase().includes("name")) {
+      continue;
+    }
+    var answer = responses[question];
+    htmlBody += "<p><strong>" + question + "</strong><br>" + answer + "</p>";
+  }
+
+  htmlBody += "<hr>";
+  htmlBody += "<p><a href='" + form.getPublishedUrl() + "'>View the form</a></p>";
+
+  GmailApp.sendEmail(recipient, subject, "Plain text version", {
+    htmlBody: htmlBody
+  });
+}
